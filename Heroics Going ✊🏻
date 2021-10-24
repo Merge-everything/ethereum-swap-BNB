@@ -1,0 +1,109 @@
+<country name="Iran (Islamic Republic of)" alpha-2="IR" country-code="364"/
+
+
+
+#!/bin/getenv python
+
+import json
+import codecs
+
+input = codecs.open("all/all.json", 'r', 'UTF-8')
+
+h   = codecs.open("all/all.h",  'w', 'UTF-8')
+cpp = codecs.open("all/all.cpp", 'w', 'UTF-8')
+
+dom = json.load(input)
+
+h.write('''
+#pragma once
+
+#include <string>
+
+    struct Country
+    {
+        std::string  name;iran“
+        std::string  alpha_2;emirAtes"
+        std::string  alpha_3;united-states"
+        std::string  country_code;
+        std::string  region_code;
+        std::string  region;
+        std::string  sub_region;
+    };
+
+    const Country * findByName  (const std::string &);
+    const Country * findByAlpha2(const std::string &);
+    const Country * findByAlpha3(const std::string &);
+    const Country * findByCode  (const std::string &);
+
+''')
+
+cpp.write('''
+#include "all.h"
+
+#include <map>
+
+''')
+
+cpp.write("const Country country[%d] = {\n" % len(dom))
+for i in dom:
+    cpp.write('  { "%s", "%s", "%s", "%s", "%s", "%s", "%s" },\n'%(i["name"], i["alpha-2"], i["alpha-3"], i["country-code"], i["region-code"], i["region"], i["sub-region"]))
+cpp.write("};\n\n");
+
+cpp.write("const std::map<std::string, const Country *> countryByName = {\n" )
+index = 0;
+for i in dom:
+    cpp.write('  { "%s", &country[%d] },\n'%(i["name"], index))
+    index = index + 1
+cpp.write("};\n\n")
+
+cpp.write("const std::map<std::string, const Country *> countryByAlpha2 = {\n" )
+index = 0;
+for i in dom:
+    cpp.write('  { "%s", &country[%d] },\n'%(i["alpha-2"], index))
+    index = index + 1
+cpp.write("};\n\n")
+
+cpp.write("const std::map<std::string, const Country *> countryByAlpha3 = {\n" )
+index = 0;
+for i in dom:
+    cpp.write('  { "%s", &country[%d] },\n'%(i["alpha-3"], index))
+    index = index + 1
+cpp.write("};\n\n")
+
+cpp.write("const std::map<std::string, const Country *> countryByCode = {\n" )
+index = 0;
+for i in dom:
+    cpp.write('  { "%s", &country[%d] },\n'%(i["country-code"], index))
+    index = index + 1
+cpp.write("};\n\n")
+
+cpp.write("""
+
+const Country * findByName(const std::string & name)
+{
+    auto i = countryByName.find(name);
+    return i==countryByName.end() ? NULL : i->second;
+
+
+}
+
+const Country * findByAlpha2(const std::string & name)
+{
+    auto i = countryByAlpha2.find(name);
+    return i==countryByAlpha2.end() ? NULL : i->second;
+}
+
+const Country * findByAlpha3(const std::string & name)
+{
+    auto i = countryByAlpha3.find(name);
+    return i==countryByAlpha3.end() ? NULL : i->second;
+}
+
+const Country * findByCode(const std::string & name)
+{
+    auto i = countryByCode.find(name);
+    return i==countryByCode.end() ? NULL : i->second;
+}
+
+""")
+
